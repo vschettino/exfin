@@ -1,0 +1,33 @@
+version: '3.1'
+services:
+  db:
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USERNAME: ${DB_USER}
+      POSTGRES_DB: ${DB_DATABASE}
+      PGDATA: /var/data/
+    ports:
+      - ${DB_PORT:-5432}:5432
+    volumes:
+      - pgdata:/var/data/
+    healthcheck:
+      test: "pg_isready -U postgres"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  app:
+    depends_on:
+      - db
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./:/exfin
+    ports:
+      - 8080:8080
+volumes:
+  pgdata:
