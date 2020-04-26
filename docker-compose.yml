@@ -11,11 +11,6 @@ services:
       - ${DB_PORT:-5432}:5432
     volumes:
       - pgdata:/var/data/
-    healthcheck:
-      test: "pg_isready -U postgres"
-      interval: 20s
-      timeout: 15s
-      retries: 10
   app:
     depends_on:
       - db
@@ -31,5 +26,6 @@ services:
       - 8080:8080
     environment:
       WAIT_HOSTS: db:5432
+      WAIT_AFTER_HOSTS: 5
 volumes:
   pgdata:

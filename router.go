@@ -8,6 +8,7 @@ func router() (g *gin.Engine) {
 	a := auth.JWTMiddleware()
 	g = gin.Default()
 	g.POST("/login", a.LoginHandler)
+
 	authRequired := g.Group("/")
 	authRequired.GET("/refresh_token", a.RefreshHandler)
 	authRequired.Use(a.MiddlewareFunc())

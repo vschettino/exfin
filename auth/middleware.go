@@ -1,7 +1,7 @@
 package auth
 
-
 import (
+	"github.com/vschettino/exfin/db"
 	m "github.com/vschettino/exfin/models"
 	"os"
 	"time"
@@ -16,6 +16,7 @@ type login struct {
 }
 
 var identityKey = "email"
+
 func JWTMiddleware() *jwt.GinJWTMiddleware {
 	authMiddleware, _ := jwt.New(&jwt.GinJWTMiddleware{
 		Realm:       "test zone",
@@ -26,7 +27,9 @@ func JWTMiddleware() *jwt.GinJWTMiddleware {
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
 			if v, ok := data.(*m.Account); ok {
 				return jwt.MapClaims{
-					identityKey: v.Email,
+					"Id":    v.Id,
+					"Email": v.Email,
+					"Name":  v.Name,
 				}
 			}
 			return jwt.MapClaims{}
@@ -34,7 +37,8 @@ func JWTMiddleware() *jwt.GinJWTMiddleware {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &m.Account{
-				Email: claims[identityKey].(string),
+				Id: uint(claims["Id"].(float64)),
+				Email: claims["Email"].(string),
 			}
 		},
 		Authenticator: func(c *gin.Context) (interface{}, error) {
@@ -44,22 +48,17 @@ func JWTMiddleware() *jwt.GinJWTMiddleware {
 			}
 			userID := loginVals.Username
 			password := loginVals.Password
-
-			if (userID == "admin" && password == "admin") || (userID == "test" && password == "test") {
-				return &m.Account{
-					Email:  userID,
-					Name:  "Bo-Yi",
-				}, nil
+			conn := db.Connection()
+			account := m.Account{Email: userID}
+			err := conn.Model(&account).Where("email = ?", userID).First()
+			if err != nil || account.VerifyPassword(password) {
+				return nil, jwt.ErrFailedAuthentication
 			}
+			return &account, nil
 
-			return nil, jwt.ErrFailedAuthentication
 		},
 		Authorizator: func(data interface{}, c *gin.Context) bool {
-			if v, ok := data.(*m.Account); ok && v.Email == "admin" {
-				return true
-			}
-
-			return false
+			return true
 		},
 		Unauthorized: func(c *gin.Context, code int, message string) {
 			c.JSON(code, gin.H{
