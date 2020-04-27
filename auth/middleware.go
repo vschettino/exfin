@@ -3,6 +3,7 @@ package auth
 import (
 	"github.com/vschettino/exfin/db"
 	m "github.com/vschettino/exfin/models"
+	"log"
 	"os"
 	"time"
 
@@ -52,6 +53,7 @@ func JWTMiddleware() *jwt.GinJWTMiddleware {
 			account := m.Account{Email: userID}
 			err := conn.Model(&account).Where("email = ?", userID).First()
 			if err != nil || account.VerifyPassword(password) {
+				log.Println(err, account)
 				return nil, jwt.ErrFailedAuthentication
 			}
 			return &account, nil

@@ -27,5 +27,6 @@ services:
     environment:
       WAIT_HOSTS: db:5432
       WAIT_AFTER_HOSTS: 5
+      CGO_ENABLED: 0
 volumes:
   pgdata:

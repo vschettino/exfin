@@ -1,10 +1,10 @@
-package main
+package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/vschettino/exfin/auth"
 	r "github.com/vschettino/exfin/resources"
 )
-func router() (g *gin.Engine) {
+func Router() (g *gin.Engine) {
 	a := auth.JWTMiddleware()
 	g = gin.Default()
 	g.POST("/login", a.LoginHandler)
