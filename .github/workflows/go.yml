@@ -54,4 +54,15 @@ jobs:
 
       run: |
         cd migrate && go run *.go init && go run *.go
-        cd ../ && go test -v -coverpkg=./... ./...
+        cd ../ && go test -v -covermode=count -coverprofile=coverage.out -coverpkg=./... ./...
+
+    - name: Convert coverage to lcov
+      uses: jandelgado/gcov2lcov-action@v1.0.0
+      with:
+        infile: coverage.out
+        outfile: coverage.lcov
+    - name: Coveralls
+      uses: coverallsapp/github-action@v1.0.1
+      with:
+        github-token: ${{ secrets.github_token }}
+        path-to-lcov: coverage.lcov
