@@ -11,12 +11,12 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    steps:
 
-    - name: Set up Go 1.x
+    steps:
+    - name: Set up Go 1.14+
       uses: actions/setup-go@v2
       with:
-        go-version: ^1.13
+        go-version: ^1.14
       id: go
 
     - name: Check out code into the Go module directory
@@ -33,5 +33,25 @@ jobs:
     - name: Build
       run: go build -v .
 
+    - name: Setup Postgres
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install libenchant-dev
+        sudo apt-get -y install postgresql postgresql-contrib
+        sudo service postgresql start
+        sudo su - postgres -c "createuser ${{secrets.TEST_PG_USER}}"
+        sudo su - postgres -c "psql -c \"ALTER USER ${{secrets.TEST_PG_USER}} WITH PASSWORD '${{secrets.TEST_PG_PASSWORD}}';\""
+        sudo su - postgres -c "psql -c \"ALTER USER ${{secrets.TEST_PG_USER}} WITH SUPERUSER;\""
+        sudo su - postgres -c "createdb --owner ${{secrets.TEST_PG_USER}} ${{secrets.TEST_PG_DATABASE}}"
+
     - name: Test
-      run: go test -v -coverpkg=./... ./...
+      env:
+        DB_PASSWORD: ${{secrets.TEST_PG_PASSWORD}}
+        DB_USER: ${{secrets.TEST_PG_USER}}
+        DB_DATABASE: ${{secrets.TEST_PG_DATABASE}}
+        DB_HOST: localhost
+        DB_PORT: 5432
+
+      run: |
+        cd migrate && go run *.go init && go run *.go
+        cd ../ && go test -v -coverpkg=./... ./...
