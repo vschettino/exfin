@@ -1,13 +1,10 @@
 package resources
 
 import (
-	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/vschettino/exfin/db"
 	m "github.com/vschettino/exfin/models"
-	"golang.org/x/crypto/bcrypt"
-	"log"
 	"net/http"
 )
 
@@ -42,13 +39,4 @@ func GetAccount(c *gin.Context) {
 func GetMyself(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	c.JSON(200, claims)
-}
-
-func GeneratePass(c *gin.Context) {
-	hash, err := bcrypt.GenerateFromPassword([]byte("adminpass"), bcrypt.DefaultCost)
-	if err != nil {
-		log.Println(err)
-	}
-	fmt.Println(string(hash))
-	c.JSON(200, "")
 }

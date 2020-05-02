@@ -13,8 +13,8 @@ func Router() (g *gin.Engine) {
 	authRequired.GET("/refresh_token", a.RefreshHandler)
 	authRequired.Use(a.MiddlewareFunc())
 	{
-		authRequired.GET("/account", r.GetAccounts)
-		authRequired.GET("/account/:id", r.GetAccount)
+		authRequired.GET("/accounts", r.GetAccounts)
+		authRequired.GET("/accounts/:id", r.GetAccount)
 		authRequired.GET("/me", r.GetMyself)
 
 	}

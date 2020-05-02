@@ -54,7 +54,7 @@ jobs:
 
       run: |
         cd migrate && go run *.go init && go run *.go
-        cd ../ && go test -v -covermode=count -coverprofile=coverage.out -coverpkg=./... ./...
+        cd ../ && ./scripts/test.sh -covermode=count -coverprofile=coverage.out
 
     - name: Convert coverage to lcov
       uses: jandelgado/gcov2lcov-action@v1.0.0
