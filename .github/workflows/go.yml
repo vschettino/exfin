@@ -53,6 +53,7 @@ jobs:
         DB_PORT: 5432
 
       run: |
+        go vet
         cd migrate && go run *.go init && go run *.go
         cd ../ && ./scripts/test.sh -covermode=count -coverprofile=coverage.out
 

@@ -5,11 +5,48 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vschettino/exfin/db"
 	m "github.com/vschettino/exfin/models"
+	"log"
 	"net/http"
 )
 
-type AccountRequest struct {
+type AccountRequest interface {
+}
+
+type FetchAccountRequest struct {
 	Id uint `uri:"id" binding:"required"`
+}
+
+type CreateAccountRequest struct {
+	Name     string `json:"name" binding:"required,min=3,max=255"`
+	Email    string `json:"email" binding:"required,email,max=255"`
+	Password string `json:"password" binding:"required,min=8,max=255"`
+}
+
+func (r CreateAccountRequest) ToAccount() m.Account {
+	acc := m.Account{Name: r.Name, Email: r.Email}
+	hash, _ := m.HashPassword(r.Password)
+	acc.Password = hash
+	return acc
+}
+
+type UpdateAccountRequest struct {
+	Name     string `json:"name" binding:"omitempty,min=3,max=255"`
+	Email    string `json:"email" binding:"omitempty,email,max=255"`
+	Password string `json:"password" binding:"omitempty,min=8,max=255"`
+}
+
+func (r UpdateAccountRequest) UpdateAccount(acc *m.Account) *m.Account {
+	if r.Email != "" {
+		acc.Email = r.Email
+	}
+	if r.Name != "" {
+		acc.Name = r.Name
+	}
+	if r.Password != ""{
+		hash, _ := m.HashPassword(r.Password)
+		acc.Password = hash
+	}
+	return acc
 }
 
 func GetAccounts(c *gin.Context) {
@@ -22,7 +59,7 @@ func GetAccounts(c *gin.Context) {
 	c.JSON(200, accounts)
 }
 func GetAccount(c *gin.Context) {
-	var req AccountRequest
+	var req FetchAccountRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid ID"})
 		return
@@ -39,4 +76,47 @@ func GetAccount(c *gin.Context) {
 func GetMyself(c *gin.Context) {
 	claims := jwt.ExtractClaims(c)
 	c.JSON(200, claims)
+}
+
+func CreateAccount(c *gin.Context) {
+	var conn = db.Connection()
+	var request CreateAccountRequest
+	if err := c.ShouldBind(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	account := request.ToAccount()
+	err := conn.Insert(&account)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "This email already exists"})
+		log.Println(err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, &account)
+}
+
+func UpdateAccount(c *gin.Context) {
+	var conn = db.Connection()
+	var request UpdateAccountRequest
+	var uri FetchAccountRequest
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	if err := c.ShouldBind(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+	var account = m.Account{Id: uri.Id}
+	if err := conn.Select(&account); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Not Found"})
+		return
+	}
+	request.UpdateAccount(&account)
+	if err := conn.Update(&account); err != nil {
+		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "This email already exists"})
+		log.Println(err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, &account)
 }

@@ -14,7 +14,9 @@ func Router() (g *gin.Engine) {
 	authRequired.Use(a.MiddlewareFunc())
 	{
 		authRequired.GET("/accounts", r.GetAccounts)
+		authRequired.POST("/accounts", r.CreateAccount)
 		authRequired.GET("/accounts/:id", r.GetAccount)
+		authRequired.PATCH("/accounts/:id", r.UpdateAccount)
 		authRequired.GET("/me", r.GetMyself)
 
 	}
