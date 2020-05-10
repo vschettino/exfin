@@ -10,7 +10,7 @@ import (
 func Connection() *pg.DB {
 	conn := pg.Connect(config())
 	if os.Getenv("ENVIRONMENT") == "DEV" {
-		conn.AddQueryHook(dbLogger{})
+		conn.AddQueryHook(DbLogger{})
 	}
 	return conn
 }
@@ -24,13 +24,13 @@ func config() *pg.Options {
 	}
 }
 
-type dbLogger struct{}
+type DbLogger struct{}
 
-func (d dbLogger) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
+func (d DbLogger) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
 	return c, nil
 }
 
-func (d dbLogger) AfterQuery(c context.Context, q *pg.QueryEvent) error {
+func (d DbLogger) AfterQuery(c context.Context, q *pg.QueryEvent) error {
 	fmt.Println(q.FormattedQuery())
 	fmt.Println(q.Err)
 	return nil
