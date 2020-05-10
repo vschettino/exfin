@@ -8,13 +8,6 @@ import (
 	"net/http"
 )
 
-type AccountRequest interface {
-}
-
-type FetchAccountRequest struct {
-	Id uint `uri:"id" binding:"required"`
-}
-
 type CreateAccountRequest struct {
 	Name     string `json:"name" binding:"required,min=3,max=255"`
 	Email    string `json:"email" binding:"required,email,max=255"`
@@ -23,8 +16,7 @@ type CreateAccountRequest struct {
 
 func (r CreateAccountRequest) ToAccount() m.Account {
 	acc := m.Account{Name: r.Name, Email: r.Email}
-	hash, _ := m.HashPassword(r.Password)
-	acc.Password = hash
+	acc.SetHashPassword(r.Password)
 	return acc
 }
 
@@ -42,8 +34,7 @@ func (r UpdateAccountRequest) UpdateAccount(acc *m.Account) *m.Account {
 		acc.Name = r.Name
 	}
 	if r.Password != "" {
-		hash, _ := m.HashPassword(r.Password)
-		acc.Password = hash
+		acc.SetHashPassword(r.Password)
 	}
 	return acc
 }
@@ -58,7 +49,7 @@ func GetAccounts(c *gin.Context) {
 	c.JSON(200, accounts)
 }
 func GetAccount(c *gin.Context) {
-	var req FetchAccountRequest
+	var req FetchByIdUri
 	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid ID"})
 		return
@@ -96,7 +87,7 @@ func CreateAccount(c *gin.Context) {
 func UpdateAccount(c *gin.Context) {
 	var conn = db.Connection()
 	var request UpdateAccountRequest
-	var uri FetchAccountRequest
+	var uri FetchByIdUri
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
