@@ -60,6 +60,28 @@ func TestGetBrokerSuccessful(t *testing.T) {
 	})
 }
 
+func TestCreateBrokerMissingRequiredParameters(t *testing.T) {
+	req := CreateBrokerRequest()
+	token := tests.GenerateToken("admin@exfin.org", 1)
+	delete(req, "name")
+	w, _ := tests.MakePOST(BrokersPath, req, token)
+	assert.Equal(t, 400, w.Code)
+}
+
+func TestCreateBrokerSuccessful(t *testing.T) {
+	conn := db.Connection()
+	var account m.Broker
+	req := CreateBrokerRequest()
+	token := tests.GenerateToken("admin@exfin.org", 1)
+	w, _ := tests.MakePOST(BrokersPath, req, token)
+	assert.Equal(t, 201, w.Code)
+	assert.NoError(t, json.Unmarshal([]byte(w.Body.String()), &account))
+	assert.Equal(t, account.Name, req["name"])
+	t.Cleanup(func() {
+		_ = conn.Delete(&account)
+	})
+}
+
 func TestUpdateUnknownBroker(t *testing.T) {
 	req := CreateBrokerRequest()
 	token := tests.GenerateToken("admin@exfin.org", 1)
