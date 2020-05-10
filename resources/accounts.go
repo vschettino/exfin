@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vschettino/exfin/db"
 	m "github.com/vschettino/exfin/models"
-	"log"
 	"net/http"
 )
 
@@ -42,7 +41,7 @@ func (r UpdateAccountRequest) UpdateAccount(acc *m.Account) *m.Account {
 	if r.Name != "" {
 		acc.Name = r.Name
 	}
-	if r.Password != ""{
+	if r.Password != "" {
 		hash, _ := m.HashPassword(r.Password)
 		acc.Password = hash
 	}
@@ -89,10 +88,9 @@ func CreateAccount(c *gin.Context) {
 	err := conn.Insert(&account)
 	if err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "This email already exists"})
-		log.Println(err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, &account)
+	c.JSON(http.StatusCreated, &account)
 }
 
 func UpdateAccount(c *gin.Context) {
@@ -115,7 +113,6 @@ func UpdateAccount(c *gin.Context) {
 	request.UpdateAccount(&account)
 	if err := conn.Update(&account); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "This email already exists"})
-		log.Println(err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, &account)
