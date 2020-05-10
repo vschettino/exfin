@@ -14,11 +14,8 @@ func TestHashPassword(t *testing.T) {
 }
 
 func TestVerifyPassword(t *testing.T) {
-	password, err := models.HashPassword("myneatpass")
-	var account = models.Account{
-		Password: password,
-	}
-	assert.NoError(t, err)
+	var account = models.Account{}
+	account.SetHashPassword("myneatpass")
 	assert.True(t, account.VerifyPassword("myneatpass"))
 }
 

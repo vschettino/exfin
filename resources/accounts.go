@@ -8,9 +8,6 @@ import (
 	"net/http"
 )
 
-type AccountRequest interface {
-}
-
 type FetchAccountRequest struct {
 	Id uint `uri:"id" binding:"required"`
 }
@@ -23,8 +20,7 @@ type CreateAccountRequest struct {
 
 func (r CreateAccountRequest) ToAccount() m.Account {
 	acc := m.Account{Name: r.Name, Email: r.Email}
-	hash, _ := m.HashPassword(r.Password)
-	acc.Password = hash
+	acc.SetHashPassword(r.Password)
 	return acc
 }
 
@@ -42,8 +38,7 @@ func (r UpdateAccountRequest) UpdateAccount(acc *m.Account) *m.Account {
 		acc.Name = r.Name
 	}
 	if r.Password != "" {
-		hash, _ := m.HashPassword(r.Password)
-		acc.Password = hash
+		acc.SetHashPassword(r.Password)
 	}
 	return acc
 }
