@@ -37,7 +37,7 @@ func JWTMiddleware() *jwt.GinJWTMiddleware {
 		IdentityHandler: func(c *gin.Context) interface{} {
 			claims := jwt.ExtractClaims(c)
 			return &m.Account{
-				Id: uint(claims["Id"].(float64)),
+				Id:    uint(claims["Id"].(float64)),
 				Email: claims["Email"].(string),
 			}
 		},

@@ -26,8 +26,12 @@ func GetBroker(c *gin.Context) {
 		return
 	}
 	var conn = db.Connection()
-	var broker = m.Broker{Id: req.Id}
-	err := conn.Model(&broker).Relation("Account").Where("account_id = ?", claims["Id"]).Select()
+	var broker = m.Broker{}
+	err := conn.Model(&broker).
+		Relation("Account").
+		Where("account_id = ?", claims["Id"]).
+		Where("broker.id = ?", req.Id).
+		Select()
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "Not Found"})
 		return
