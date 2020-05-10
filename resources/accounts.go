@@ -8,10 +8,6 @@ import (
 	"net/http"
 )
 
-type FetchAccountRequest struct {
-	Id uint `uri:"id" binding:"required"`
-}
-
 type CreateAccountRequest struct {
 	Name     string `json:"name" binding:"required,min=3,max=255"`
 	Email    string `json:"email" binding:"required,email,max=255"`
@@ -53,7 +49,7 @@ func GetAccounts(c *gin.Context) {
 	c.JSON(200, accounts)
 }
 func GetAccount(c *gin.Context) {
-	var req FetchAccountRequest
+	var req FetchByIdUri
 	if err := c.ShouldBindUri(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Invalid ID"})
 		return
@@ -91,7 +87,7 @@ func CreateAccount(c *gin.Context) {
 func UpdateAccount(c *gin.Context) {
 	var conn = db.Connection()
 	var request UpdateAccountRequest
-	var uri FetchAccountRequest
+	var uri FetchByIdUri
 	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return

@@ -26,6 +26,8 @@ func Router() (g *gin.Engine) {
 		{ // Brokers
 			authRequired.GET("/brokers", r.GetBrokers)
 			authRequired.GET("/brokers/:id", r.GetBroker)
+			authRequired.POST("/brokers", r.CreateBroker)
+			authRequired.PATCH("/brokers/:id", r.UpdateBroker)
 		}
 	}
 
