@@ -3,12 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/go-pg/migrations/v7"
 	"github.com/vschettino/exfin/db"
 	"os"
-	"github.com/go-pg/migrations/v7"
 )
 
-const usageText = `This program runs command on the db. Supported commands are:
+const usageText = `This program runs command on the db. Supported exfin-cli are:
   - init - creates version info table in the database
   - up - runs all available migrate.
   - up [target] - runs available migrate up to the target one.
