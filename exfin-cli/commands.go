@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	influxdb2 "github.com/influxdata/influxdb-client-go"
 	"github.com/markcheno/go-quote"
 	"github.com/urfave/cli/v2"
+	"github.com/vschettino/exfin/db"
 	"time"
 )
 
@@ -33,7 +35,17 @@ var sync = cli.Command{
 			to = c.Timestamp("from").Format("2006-01-02")
 		}
 		spy, _ := quote.NewQuoteFromYahoo(ticker, from, to, quote.Daily, true)
-		fmt.Print(spy.Close)
+		api := db.InfluxWriteApi()
+		for lineNumber := range spy.Close {
+			p := influxdb2.NewPoint("stocks", map[string]string{
+				"ticker": spy.Symbol,
+			}, map[string]interface{}{
+				"close":  spy.Close[lineNumber],
+				"higher": spy.High[lineNumber],
+			}, spy.Date[lineNumber])
+			api.WritePoint(p)
+		}
+		api.Flush()
 		return nil
 	},
 }

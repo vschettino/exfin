@@ -1,5 +1,13 @@
 version: '3.1'
 services:
+  influx:
+    image: influxdb:1.8-alpine
+    env_file:
+      - .env
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdbdata:/var/lib/influxdb
   db:
     image: postgres:12-alpine
     environment:
@@ -14,6 +22,7 @@ services:
   app:
     depends_on:
       - db
+      - influx
     restart: on-failure
     build:
       context: .
@@ -28,5 +37,19 @@ services:
       WAIT_HOSTS: db:5432
       WAIT_AFTER_HOSTS: 5
       CGO_ENABLED: 0
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - grafanadata:/var/lib/grafana
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      GF_INSTALL_PLUGINS: "flant-statusmap-panel,grafana-piechart-panel,savantly-heatmap-panel"
+
 volumes:
   pgdata:
+  influxdbdata:
+  grafanadata:

@@ -4,13 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-pg/pg/v9"
+	"github.com/influxdata/influxdb-client-go"
+	"github.com/influxdata/influxdb-client-go/api"
 	"os"
 )
 
 func Connection() *pg.DB {
 	conn := pg.Connect(config())
 	if os.Getenv("ENVIRONMENT") == "DEV" {
-		conn.AddQueryHook(DbLogger{})
+		conn.AddQueryHook(Logger{})
 	}
 	return conn
 }
@@ -24,14 +26,24 @@ func config() *pg.Options {
 	}
 }
 
-type DbLogger struct{}
+type Logger struct{}
 
-func (d DbLogger) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
+func (d Logger) BeforeQuery(c context.Context, q *pg.QueryEvent) (context.Context, error) {
 	return c, nil
 }
 
-func (d DbLogger) AfterQuery(c context.Context, q *pg.QueryEvent) error {
+func (d Logger) AfterQuery(c context.Context, q *pg.QueryEvent) error {
 	fmt.Println(q.FormattedQuery())
 	fmt.Println(q.Err)
 	return nil
+}
+
+func InfluxClient() influxdb2.Client {
+	return influxdb2.NewClientWithOptions("http://influx:8086", "",
+		influxdb2.DefaultOptions().SetBatchSize(100))
+}
+
+func InfluxWriteApi() api.WriteApi {
+	client := InfluxClient()
+	return client.WriteApi("exfin", "exfin")
 }

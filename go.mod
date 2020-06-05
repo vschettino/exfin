@@ -10,6 +10,7 @@ require (
 	github.com/go-pg/pg/v9 v9.1.6
 	github.com/go-pg/urlstruct v0.4.0 // indirect
 	github.com/golang/protobuf v1.3.5 // indirect
+	github.com/influxdata/influxdb-client-go v1.2.0
 	github.com/markcheno/go-quote v0.0.0-20200524143800-1216f8ea2732
 	github.com/markcheno/go-talib v0.0.0-20190307022042-cd53a9264d70
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect

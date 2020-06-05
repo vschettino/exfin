@@ -15,7 +15,7 @@ func TestConnection(t *testing.T) {
 }
 
 func TestQueryLogger(t *testing.T) {
-	logger := db.DbLogger{}
+	logger := db.Logger{}
 	query := pg.QueryEvent{
 		StartTime: time.Time{},
 		DB:        db.Connection(),
