@@ -2,36 +2,38 @@ package main
 
 import (
 	"fmt"
+	"github.com/markcheno/go-quote"
 	"github.com/urfave/cli/v2"
 	"time"
 )
 
-var today = cli.NewTimestamp(time.Now().AddDate(12, 0, 0))
-var lastYear = cli.NewTimestamp(time.Now().AddDate(12, 0, 0))
+var from = time.Now().AddDate(-12, 0, 0).Format("2006-01-02")
+var to = time.Now().Format("2006-01-02")
 
 var sync = cli.Command{
 	Name:    "sync",
 	Aliases: []string{"s"},
 	Flags: []cli.Flag{
 		&cli.TimestampFlag{
-			Name:        "from",
-			Usage:       "Fetch data from",
-			Value:       lastYear,
-			DefaultText: "One Year Ago",
-			Layout:      "YYYY-MM-DD",
+			Name:   "from",
+			Layout: "2006-01-02",
 		},
 		&cli.TimestampFlag{
-			Name:        "to",
-			Usage:       "Fetch data until",
-			Value:       today,
-			DefaultText: "Today",
-			Layout:      "YYYY-MM-DD",
+			Name:   "to",
+			Layout: "2006-01-02",
 		},
 	},
-	Usage: "sync TICKER",
+	Usage: "TICKER",
 	Action: func(c *cli.Context) error {
 		ticker := c.Args().First()
-		fmt.Println("added task: ", c.Args().First())
+		if c.Timestamp("from") != nil {
+			from = c.Timestamp("from").Format("2006-01-02")
+		}
+		if c.Timestamp("to") != nil {
+			to = c.Timestamp("from").Format("2006-01-02")
+		}
+		spy, _ := quote.NewQuoteFromYahoo(ticker, from, to, quote.Daily, true)
+		fmt.Print(spy.Close)
 		return nil
 	},
 }
