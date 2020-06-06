@@ -40,7 +40,7 @@ func (d Logger) AfterQuery(c context.Context, q *pg.QueryEvent) error {
 
 func InfluxClient() influxdb2.Client {
 	return influxdb2.NewClientWithOptions("http://influx:8086", "",
-		influxdb2.DefaultOptions().SetBatchSize(100))
+		influxdb2.DefaultOptions().SetBatchSize(500))
 }
 
 func InfluxWriteApi() api.WriteApi {
